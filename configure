@@ -19,7 +19,7 @@ does_git_exists() {
 }
 
 download_kit() {
-  git clone --depth 1 https://github.com/reo7sp/reo-web-starter-kit
+  git clone --depth 1 https://github.com/reo7sp/reo-web-starter-kit .
 }
 
 is_kit_git() {
