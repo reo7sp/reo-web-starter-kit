@@ -23,7 +23,7 @@ download_kit() {
 }
 
 is_kit_git() {
-  git remote -v | grep "reo7sp/reo-web-starter-kit" > /dev/null 2>&1
+  does_git_exists && git remote -v | grep "reo7sp/reo-web-starter-kit" > /dev/null 2>&1
 }
 
 reinit_git() {
@@ -41,16 +41,18 @@ install_deps() {
 }
 
 change_info() {
-  rm LICENSE
   sed_i -e "s/\"name\": \"reo-web-starter-kit\"/\"name\": \"$(name_of_current_dir)\"/" package.json
   sed_i -e "s/\"description\": \"Boilerplate for sites\"/\"description\": \"\"/" package.json
   sed_i -e "s/\"author\": \"Oleg Morozenkov\"/\"author\": \"$(whoami)\"/" package.json
+  rm LICENSE README.md configure
 }
 
 
 main() {
-  does_git_exists || download_kit
-  is_kit_git && reinit_git
+  if ! is_kit_git; then
+    download_kit
+    reinit_git
+  fi
   install_deps
   change_info
 }
