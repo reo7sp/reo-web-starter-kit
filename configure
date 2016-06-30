@@ -1,0 +1,54 @@
+#!/bin/bash
+
+case $(sed --help 2>&1) in
+  *GNU*) sed_i () { sed -i "$@"; };;
+  *) sed_i () { sed -i '' "$@"; };;
+esac
+
+name_of_current_dir() {
+  echo ${PWD##*/}
+}
+
+is_dir_writeable() {
+  random_file=$1/test_is_dir_writeable-oMbzDJ8Ueaxcwi864BM5
+  touch $random_file 2>/dev/null && rm $random_file 2>/dev/null
+}
+
+does_git_exists() {
+  [[ -d ".git" ]]
+}
+
+download_kit() {
+  git clone --depth 1 https://github.com/reo7sp/reo-web-starter-kit
+}
+
+reinit_git() {
+  rm -rf .git
+  git init
+}
+
+install_deps() {
+  if is_dir_writeable /usr/local/bin; then
+    npm install --global gulp-cli
+  else
+    sudo npm install --global gulp-cli
+  fi
+  npm install
+}
+
+change_info() {
+  rm LICENSE
+  sed_i -e "s/\"name\": \"reo-web-starter-kit\"/\"name\": \"$(name_of_current_dir)\"/" package.json
+  sed_i -e "s/\"description\": \"Boilerplate for sites\"/\"description\": \"\"/" package.json
+  sed_i -e "s/\"author\": \"Oleg Morozenkov\"/\"author\": \"$(whoami)\"/" package.json
+}
+
+
+main() {
+  does_git_exists || download_kit
+  reinit_git
+  install_deps
+  change_info
+}
+
+[[ "$0" == "$BASH_SOURCE" ]] && main $@
