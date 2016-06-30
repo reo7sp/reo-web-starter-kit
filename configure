@@ -22,6 +22,10 @@ download_kit() {
   git clone --depth 1 https://github.com/reo7sp/reo-web-starter-kit
 }
 
+is_kit_git() {
+  git remote -v | grep "reo7sp/reo-web-starter-kit" > /dev/null 2>&1
+}
+
 reinit_git() {
   rm -rf .git
   git init
@@ -46,7 +50,7 @@ change_info() {
 
 main() {
   does_git_exists || download_kit
-  reinit_git
+  is_kit_git && reinit_git
   install_deps
   change_info
 }
