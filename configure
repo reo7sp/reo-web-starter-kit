@@ -10,20 +10,38 @@ name_of_current_dir() {
 }
 
 is_dir_writeable() {
-  random_file=$1/test_is_dir_writeable-oMbzDJ8Ueaxcwi864BM5
-  touch $random_file 2>/dev/null && rm $random_file 2>/dev/null
+  local dir=$1
+  local random_file=$dir/test_is_dir_writeable-oMbzDJ8Ueaxcwi864BM5
+  touch "$random_file" 2>/dev/null && rm "$random_file" 2>/dev/null
 }
 
-does_git_exists() {
+can_exec() {
+  local command=$(echo $1 | awk '{print $1;}')
+  hash $command 2>/dev/null
+}
+
+confirm() {
+  local message=$1
+
+  echo -n "$message [Y/n] "
+  read response
+  case $response in
+    [yY][eE][sS]|[yY]|"")
+      true
+      ;;
+    *)
+      false
+      ;;
+  esac
+}
+
+
+does_git_exist() {
   [[ -d ".git" ]]
 }
 
-download_kit() {
-  git clone --depth 1 https://github.com/reo7sp/reo-web-starter-kit .
-}
-
 is_kit_git() {
-  does_git_exists && git remote -v | grep "reo7sp/reo-web-starter-kit" > /dev/null 2>&1
+  does_git_exist && git remote -v | grep "reo7sp/reo-web-starter-kit" > /dev/null 2>&1
 }
 
 reinit_git() {
@@ -32,10 +50,15 @@ reinit_git() {
 }
 
 install_deps() {
-  if is_dir_writeable /usr/local/bin; then
-    npm install --global gulp-cli
-  else
-    sudo npm install --global gulp-cli
+  if ! can_exec gulp; then
+    if is_dir_writeable /usr/local/bin; then
+      npm install --global gulp-cli
+    else
+      if confirm "Do you want to install gulp?"; then
+        echo ">sudo npm install --global gulp-cli"
+        sudo npm install --global gulp-cli
+      fi
+    fi
   fi
   npm install
 }
@@ -49,10 +72,7 @@ change_info() {
 
 
 main() {
-  if ! is_kit_git; then
-    download_kit
-    reinit_git
-  fi
+  is_kit_git && reinit_git
   install_deps
   change_info
 }
