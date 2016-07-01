@@ -38,7 +38,7 @@ styles = 'app/styles/**/*.{sass,scss,css}'
 
 stylesPipe = ->
   gulp.src stylesMain
-    .pipe $.plumber plumberOptions
+    .pipe $.plumber(plumberOptions)
     .pipe $.sourcemaps.init()
     .pipe $.sass.sync()
     .pipe $.rename 'app.css'
@@ -71,7 +71,6 @@ scriptsPipe = ->
     .on 'error', plumberOptions.errorHandler
     .pipe source 'app.js'
     .pipe buffer()
-#    .pipe $.plumber plumberOptions
 
 gulp.task 'scripts', ->
   scriptsPipe()
@@ -90,11 +89,12 @@ htmls = ['app/**/*.html', '!app/**/_*.html']
 
 htmlsPipe = ->
   gulp.src htmls
-    .pipe $.plumber plumberOptions
+    .pipe $.plumber(plumberOptions)
     .pipe $.nunjucksRender {path: 'app'}
 
 gulp.task 'htmls', ->
   htmlsPipe()
+    .pipe $.cached 'htmls'
     .pipe gulp.dest '.tmp'
 
 gulp.task 'htmls:dist', ->
@@ -110,7 +110,8 @@ gulp.task 'htmls:dist', ->
     removeOptionalTags: true
 
   htmlsPipe()
-    .pipe $.htmlmin htmlminOptions
+    .pipe $.cached 'htmls:dist'
+    .pipe $.htmlmin(htmlminOptions)
     .pipe gulp.dest 'dist'
 
 
@@ -119,21 +120,24 @@ images = 'app/images/**/*'
 
 imagesPipe = ->
   gulp.src images
-    .pipe $.plumber plumberOptions
-    .pipe $.cache($.imagemin({progressive: true, interlaced: true}))
-    .pipe gulp.dest 'dist'
+    .pipe $.plumber(plumberOptions)
 
 gulp.task 'images', ->
   imagesPipe()
+    .pipe $.cached 'images'
+    .pipe gulp.dest '.tmp/images'
 
 gulp.task 'images:dist', ->
   imagesPipe()
+    .pipe $.cached 'images:dist'
+    .pipe $.imagemin {progressive: true, interlaced: true}
+    .pipe gulp.dest 'dist/images'
 
 
 #
 sourcesTasks = ['styles', 'scripts', 'htmls', 'images']
 sourcesFileGroups = [styles, scripts, htmls, images]
-sources = _.flattenDeep(sourcesFileGroups)
+sources = _.flattenDeep sourcesFileGroups
 everything = 'app/**/*'
 
 
@@ -142,8 +146,9 @@ other = _.concat everything, _.map(sources, (match) -> "#{if match[0] != '!' the
 
 otherPipe = ->
   gulp.src other
-    .pipe $.plumber plumberOptions
-    .pipe gulp.dest('dist')
+    .pipe $.plumber(plumberOptions)
+    .pipe $.cached 'other'
+    .pipe gulp.dest 'dist'
 
 gulp.task 'other', ->
   otherPipe()
@@ -180,7 +185,7 @@ gulp.task 'serve:dist', ['compile:dist'], ->
 
 gulp.task 'build', (callback) ->
   runSequence 'clean', 'compile', callback
-  
+
 gulp.task 'build:dist', (callback) ->
   runSequence 'clean', 'compile:dist', callback
 
@@ -189,6 +194,6 @@ gulp.task 'deploy', ['build:dist'], ->
     project: './dist'
     # domain: 'example.surge.sh' # Your domain or Surge subdomain
 
-  $.surge surgeOptions
+  $.surge(surgeOptions)
 
 gulp.task 'default', ['build:dist']
