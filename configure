@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Reset color
+Color_Off='\033[0m'
+# Bold colors
+BWhite='\033[1;37m'
+
+
 case $(sed --help 2>&1) in
   *GNU*) sed_i () { sed -i "$@"; };;
   *) sed_i () { sed -i '' "$@"; };;
@@ -23,7 +29,8 @@ can_exec() {
 confirm() {
   local message=$1
 
-  echo -n "$message [Y/n] "
+  echo
+  echo -n "${BWhite}$message${Color_Off} [Y/n] "
   read response
   case $response in
     [yY][eE][sS]|[yY]|"")
