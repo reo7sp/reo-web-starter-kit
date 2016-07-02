@@ -3,11 +3,8 @@ Boilerplate for sites
 
 ## Usage
 ```sh
-mkdir YOUR_SITE_NAME
-cd YOUR_SITE_NAME
+npm install -g yo gulp-cli generator-reo-web-starter-kit
 
-git clone --depth 1 https://github.com/reo7sp/reo-web-starter-kit .
-./configure
-
+yo reo-web-starter-kit
 gulp serve
 ```
