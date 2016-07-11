@@ -28,12 +28,13 @@ plumberOptions =
       $.util.colors.cyan('Plumber') + $.util.colors.red(' found unhandled error:\n'),
       err.toString()
     )
-    this.emit("end")
+    @emit("end")
 
 
 # --- Styles --- #
-stylesMain = _.find ['app/styles/main.sass', 'app/styles/main.scss', 'app/styles/main.css'], file_exists
-stylesMain ?= 'app/styles/main.sass'
+possibleStylesMain = ['app/styles/main.sass', 'app/styles/main.scss', 'app/styles/main.css']
+stylesMain = _.find(possibleStylesMain, file_exists)
+stylesMain ?= possibleStylesMain[0]
 styles = 'app/styles/**/*.{sass,scss,css}'
 
 stylesPipe = ->
@@ -41,12 +42,12 @@ stylesPipe = ->
     .pipe $.plumber(plumberOptions)
     .pipe $.sourcemaps.init()
     .pipe $.sass.sync()
-    .pipe $.rename 'app.css'
+    .pipe $.rename('app.css')
     .pipe $.autoprefixer()
 
 gulp.task 'styles', ->
   stylesPipe()
-    .pipe $.sourcemaps.write '.'
+    .pipe $.sourcemaps.write('.')
     .pipe gulp.dest '.tmp/styles'
 
 gulp.task 'styles:dist', ->
@@ -60,22 +61,23 @@ gulp.task 'styles:dist', ->
 
 
 # --- Scripts --- #
-scriptsMain = _.find ['app/scripts/main.coffee', 'app/scripts/main.js'], file_exists
-scriptsMain ?= 'app/scripts/main.coffee'
+possibleScriptsMain = ['app/scripts/main.coffee', 'app/scripts/main.js']
+scriptsMain = _.find(possibleScriptsMain, file_exists)
+scriptsMain ?= possibleScriptsMain[0]
 scripts = 'app/scripts/**/*.{coffee,js}'
 
 scriptsPipe = ->
-  browserify scriptsMain, {debug: true}
-    .transform 'coffeeify'
+  browserify scriptsMain, debug: true
+    .transform('coffeeify')
     .bundle()
-    .on 'error', plumberOptions.errorHandler
-    .pipe source 'app.js'
+    .on('error', plumberOptions.errorHandler)
+    .pipe source('app.js')
     .pipe buffer()
 
 gulp.task 'scripts', ->
   scriptsPipe()
-    .pipe $.sourcemaps.init {loadMaps: true}
-    .pipe $.sourcemaps.write '.'
+    .pipe $.sourcemaps.init(loadMaps: true)
+    .pipe $.sourcemaps.write('.')
     .pipe gulp.dest '.tmp/scripts'
 
 gulp.task 'scripts:dist', ->
@@ -90,11 +92,11 @@ htmls = ['app/**/*.html', '!app/**/_*.html']
 htmlsPipe = ->
   gulp.src htmls
     .pipe $.plumber(plumberOptions)
-    .pipe $.nunjucksRender {path: 'app'}
+    .pipe $.nunjucksRender(path: 'app')
 
 gulp.task 'htmls', ->
   htmlsPipe()
-    .pipe $.cached 'htmls'
+    .pipe $.cached('htmls')
     .pipe gulp.dest '.tmp'
 
 gulp.task 'htmls:dist', ->
@@ -110,7 +112,7 @@ gulp.task 'htmls:dist', ->
     removeOptionalTags: true
 
   htmlsPipe()
-    .pipe $.cached 'htmls:dist'
+    .pipe $.cached('htmls:dist')
     .pipe $.htmlmin(htmlminOptions)
     .pipe gulp.dest 'dist'
 
@@ -124,30 +126,30 @@ imagesPipe = ->
 
 gulp.task 'images', ->
   imagesPipe()
-    .pipe $.cached 'images'
+    .pipe $.cached('images')
     .pipe gulp.dest '.tmp/images'
 
 gulp.task 'images:dist', ->
   imagesPipe()
-    .pipe $.cached 'images:dist'
-    .pipe $.imagemin {progressive: true, interlaced: true}
+    .pipe $.cached('images:dist')
+    .pipe $.imagemin(progressive: true, interlaced: true)
     .pipe gulp.dest 'dist/images'
 
 
 #
 sourcesTasks = ['styles', 'scripts', 'htmls', 'images']
 sourcesFileGroups = [styles, scripts, htmls, images]
-sources = _.flattenDeep sourcesFileGroups
+sources = _.flattenDeep(sourcesFileGroups)
 everything = 'app/**/*'
 
 
 # --- Other --- #
-other = _.concat everything, _.map(sources, (match) -> "#{if match[0] != '!' then '!' else ''}#{match}")
+other = _.concat(everything, _.map(sources, (match) -> "#{if match[0] != '!' then '!' else ''}#{match}"))
 
 otherPipe = ->
   gulp.src other
     .pipe $.plumber(plumberOptions)
-    .pipe $.cached 'other'
+    .pipe $.cached('other')
     .pipe gulp.dest 'dist'
 
 gulp.task 'other', ->
@@ -158,28 +160,28 @@ gulp.task 'other:dist', ->
 
 
 #
-allSourcesTasks = _.concat sourcesTasks, 'other'
-allSourcesDistTasks = _.map allSourcesTasks, (task) -> "#{task}:dist"
-allSourcesFileGroups = _.concat sourcesFileGroups, [other]
+allSourcesTasks = _.concat(sourcesTasks, 'other')
+allSourcesDistTasks = _.map(allSourcesTasks, (task) -> "#{task}:dist")
+allSourcesFileGroups = _.concat(sourcesFileGroups, [other])
 
 
 # --- Main --- #
 gulp.task 'clean', ->
-  del ['.tmp', 'dist/*'], {dot: true}
+  del(['.tmp', 'dist/*'], dot: true)
 
 gulp.task 'compile', allSourcesTasks
 
 gulp.task 'compile:dist', allSourcesDistTasks
 
 gulp.task 'serve', ['compile'], ->
-  browserSync {notify: false, server: ['.tmp', 'dist']}
+  browserSync(notify: false, server: ['.tmp', 'dist'])
   for [name, group] in _.zip allSourcesTasks, allSourcesFileGroups
     gulp.watch group, [name, browserSync.reload]
   return
 
 gulp.task 'serve:dist', ['compile:dist'], ->
-  browserSync {notify: false, server: ['dist']}
-  for [name, group] in _.zip allSourcesDistTasks, allSourcesFileGroups
+  browserSync(notify: false, server: ['dist'])
+  for [name, group] in _.zip(allSourcesDistTasks, allSourcesFileGroups)
     gulp.watch group, [name, browserSync.reload]
   return
 
