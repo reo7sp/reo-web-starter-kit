@@ -177,8 +177,8 @@ gulp.task 'serve', ['compile'], ->
   for [name, group] in _.zip allSourcesTasks, allSourcesFileGroups
     switch name
       when 'scripts'
-        # Cyka blyad. Watchify don't work from gulp properly. Pizdec voopshe. Paru chasov ubil. Gorit pizdec
-        fork './node_modules/.bin/watchify', [scriptsMain, '-o', '.tmp/scripts/app.js', '-t', 'coffeeify', '-v']
+        # Watchify don't listen changes from gulp. Cyka blyad. Pizdec voopshe. Paru chasov ubil. Gorit pizdec
+        fork './node_modules/.bin/watchify', [scriptsMain, '-o', './node_modules/.bin/exorcist .tmp/scripts/app.js.map > .tmp/scripts/app.js', '-t', 'coffeeify', '-d', '-v']
         gulp.watch scriptsMain, ->
           setTimeout((-> browserSync.reload()), 500)
 
