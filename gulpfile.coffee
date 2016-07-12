@@ -2,12 +2,11 @@ gulp = require 'gulp'
 $ = require('gulp-load-plugins')()
 
 fs = require 'fs'
+fork = require('child_process').fork
 _ = require 'lodash'
-
 del = require 'del'
 runSequence = require 'run-sequence'
 browserSync = require 'browser-sync'
-
 browserify = require 'browserify'
 source = require 'vinyl-source-stream'
 buffer = require 'vinyl-buffer'
@@ -176,7 +175,15 @@ gulp.task 'compile:dist', allSourcesDistTasks
 gulp.task 'serve', ['compile'], ->
   browserSync(notify: false, server: ['.tmp', 'dist'])
   for [name, group] in _.zip allSourcesTasks, allSourcesFileGroups
-    gulp.watch group, [name, browserSync.reload]
+    switch name
+      when 'scripts'
+        # Cyka blyad. Watchify don't work from gulp properly. Pizdec voopshe. Paru chasov ubil. Gorit pizdec
+        fork './node_modules/.bin/watchify', [scriptsMain, '-o', '.tmp/scripts/app.js', '-t', 'coffeeify', '-v']
+        gulp.watch scriptsMain, ->
+          setTimeout((-> browserSync.reload()), 500)
+
+      else
+        gulp.watch group, [name, browserSync.reload]
   return
 
 gulp.task 'serve:dist', ['compile:dist'], ->
