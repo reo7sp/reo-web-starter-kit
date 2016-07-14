@@ -2,12 +2,12 @@ gulp = require 'gulp'
 $ = require('gulp-load-plugins')()
 
 fs = require 'fs'
-fork = require('child_process').fork
 _ = require 'lodash'
 del = require 'del'
 runSequence = require 'run-sequence'
 browserSync = require 'browser-sync'
 browserify = require 'browserify'
+browserifyInc = require 'browserify-incremental'
 source = require 'vinyl-source-stream'
 buffer = require 'vinyl-buffer'
 
@@ -66,7 +66,9 @@ scriptsMain ?= possibleScriptsMain[0]
 scripts = 'app/scripts/**/*.{coffee,js}'
 
 scriptsPipe = ->
-  browserify scriptsMain, debug: true
+  b = browserify(scriptsMain, _.extend(browserifyInc.args, debug: true))
+  browserifyInc(b, cacheFile: './browserify-cache.json')
+  b
     .transform('coffeeify')
     .bundle()
     .on('error', plumberOptions.errorHandler)
@@ -175,15 +177,7 @@ gulp.task 'compile:dist', allSourcesDistTasks
 gulp.task 'serve', ['compile'], ->
   browserSync(notify: false, server: ['.tmp', 'dist'])
   for [name, group] in _.zip allSourcesTasks, allSourcesFileGroups
-    switch name
-      when 'scripts'
-        # Watchify don't listen changes from gulp. Cyka blyad. Pizdec voopshe. Paru chasov ubil. Gorit pizdec
-        fork './node_modules/.bin/watchify', [scriptsMain, '-o', './node_modules/.bin/exorcist .tmp/scripts/app.js.map > .tmp/scripts/app.js', '-t', 'coffeeify', '-d', '-v']
-        gulp.watch scriptsMain, ->
-          setTimeout((-> browserSync.reload()), 500)
-
-      else
-        gulp.watch group, [name, browserSync.reload]
+    gulp.watch group, [name, browserSync.reload]
   return
 
 gulp.task 'serve:dist', ['compile:dist'], ->
