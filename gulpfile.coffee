@@ -44,7 +44,7 @@ stylesPipe = ->
     .pipe $.rename('app.css')
     .pipe $.autoprefixer()
 
-gulp.task 'styles', ->
+gulp.task 'styles:debug', ->
   stylesPipe()
     .pipe $.sourcemaps.write('.')
     .pipe gulp.dest '.tmp/styles'
@@ -56,7 +56,10 @@ gulp.task 'styles:dist', ->
 
   stylesPipe()
     .pipe $.cssnano(cssnanoOptions)
+    .pipe $.rev()
     .pipe gulp.dest 'dist/styles'
+    .pipe $.rev.manifest(merge: true)
+    .pipe gulp.dest '.'
 
 
 # --- Scripts --- #
@@ -75,7 +78,7 @@ scriptsPipe = ->
     .pipe source('app.js')
     .pipe buffer()
 
-gulp.task 'scripts', ->
+gulp.task 'scripts:debug', ->
   scriptsPipe()
     .pipe $.sourcemaps.init(loadMaps: true)
     .pipe $.sourcemaps.write('.')
@@ -84,7 +87,10 @@ gulp.task 'scripts', ->
 gulp.task 'scripts:dist', ->
   scriptsPipe()
     .pipe $.uglify()
+    .pipe $.rev()
     .pipe gulp.dest 'dist/scripts'
+    .pipe $.rev.manifest(merge: true)
+    .pipe gulp.dest '.'
 
 
 # --- HTMLs --- #
@@ -95,7 +101,7 @@ htmlsPipe = ->
     .pipe $.plumber(plumberOptions)
     .pipe $.nunjucksRender(path: 'app')
 
-gulp.task 'htmls', ->
+gulp.task 'htmls:debug', ->
   htmlsPipe()
     .pipe $.cached('htmls')
     .pipe gulp.dest '.tmp'
@@ -114,6 +120,7 @@ gulp.task 'htmls:dist', ->
 
   htmlsPipe()
     .pipe $.cached('htmls:dist')
+    .pipe $.revReplace(manifest: gulp.src('./rev-manifest.json'))
     .pipe $.htmlmin(htmlminOptions)
     .pipe gulp.dest 'dist'
 
@@ -125,7 +132,7 @@ imagesPipe = ->
   gulp.src images
     .pipe $.plumber(plumberOptions)
 
-gulp.task 'images', ->
+gulp.task 'images:debug', ->
   imagesPipe()
     .pipe $.cached('images')
     .pipe gulp.dest '.tmp/images'
@@ -153,7 +160,7 @@ otherPipe = ->
     .pipe $.cached('other')
     .pipe gulp.dest 'dist'
 
-gulp.task 'other', ->
+gulp.task 'other:debug', ->
   otherPipe()
 
 gulp.task 'other:dist', ->
@@ -162,21 +169,23 @@ gulp.task 'other:dist', ->
 
 #
 allSourcesTasks = _.concat(sourcesTasks, 'other')
+allSourcesDebugTasks = _.map(allSourcesTasks, (task) -> "#{task}:debug")
 allSourcesDistTasks = _.map(allSourcesTasks, (task) -> "#{task}:dist")
 allSourcesFileGroups = _.concat(sourcesFileGroups, [other])
 
 
 # --- Main --- #
 gulp.task 'clean', ->
-  del(['.tmp', 'dist/*'], dot: true)
+  del(['.tmp', 'dist/*', 'rev-manifest.json'], dot: true)
 
-gulp.task 'compile', allSourcesTasks
+gulp.task 'compile:debug', allSourcesDebugTasks
 
-gulp.task 'compile:dist', allSourcesDistTasks
+gulp.task 'compile:dist', (callback) ->
+  runSequence _.without(allSourcesDistTasks, 'htmls:dist'), 'htmls:dist', callback
 
-gulp.task 'serve', ['compile'], ->
+gulp.task 'serve', ['compile:debug'], ->
   browserSync(notify: false, server: ['.tmp', 'dist'])
-  for [name, group] in _.zip allSourcesTasks, allSourcesFileGroups
+  for [name, group] in _.zip allSourcesDebugTasks, allSourcesFileGroups
     gulp.watch group, [name, browserSync.reload]
   return
 
@@ -186,8 +195,8 @@ gulp.task 'serve:dist', ['compile:dist'], ->
     gulp.watch group, [name, browserSync.reload]
   return
 
-gulp.task 'build', (callback) ->
-  runSequence 'clean', 'compile', callback
+gulp.task 'build:debug', (callback) ->
+  runSequence 'clean', 'compile:debug', callback
 
 gulp.task 'build:dist', (callback) ->
   runSequence 'clean', 'compile:dist', callback

@@ -5,3 +5,4 @@ dist
 .idea
 npm-debug.log
 browserify-cache.json
+rev-manifest.json
