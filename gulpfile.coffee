@@ -187,7 +187,7 @@ gulp.task "clean", ->
 gulp.task "compile:dev", allSourcesDevTasks
 
 gulp.task "compile:dist", (callback) ->
-  runSequence _.without(allSourcesDistTasks, "htmls:dist"), "htmls:dist", callback
+  runSequence _.without(allSourcesDistTasks, "htmls:dist"), "htmls:dist", callback # hack for gulp-rev plugin
 
 gulp.task "serve", ["compile:dev"], ->
   browserSync(notify: false, server: [tmpDistRoot, distRoot])
