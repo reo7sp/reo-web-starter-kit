@@ -34,13 +34,7 @@ file_exists = (file) ->
 
 
 plumberOptions =
-  errorHandler: (err) ->
-    $.util.beep()
-    $.util.log(
-      $.util.colors.cyan("Plumber") + $.util.colors.red(" found unhandled error:\n"),
-      err.toString()
-    )
-    @emit("end")
+  errorHandler: $.notify.onError("<%= error.message %>")
 
 
 # --- Styles --- #
@@ -63,12 +57,8 @@ gulp.task "styles:dev", ->
     .pipe gulp.dest stylesTmpDistRoot
 
 gulp.task "styles:dist", ->
-  cssnanoOptions =
-    discardComments:
-      removeAll: true
-
   stylesPipe()
-    .pipe $.cssnano(cssnanoOptions)
+    .pipe $.csso(comments: false)
     .pipe $.rev()
     .pipe gulp.dest stylesDistRoot
     .pipe $.rev.manifest(merge: true)
