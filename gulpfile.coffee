@@ -10,6 +10,7 @@ browserify = require "browserify"
 browserifyInc = require "browserify-incremental"
 source = require "vinyl-source-stream"
 buffer = require "vinyl-buffer"
+sassyNpmImporter = require "sassy-npm-importer"
 
 
 sourceRoot = "app"
@@ -45,7 +46,7 @@ stylesPipe = ->
   gulp.src stylesMain
     .pipe $.plumber(plumberOptions)
     .pipe $.sourcemaps.init()
-    .pipe $.sass.sync()
+    .pipe $.sass.sync(importer: sassyNpmImporter())
     .pipe $.rename("app.css")
     .pipe $.autoprefixer()
 

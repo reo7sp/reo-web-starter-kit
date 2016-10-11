@@ -17,7 +17,8 @@
   "homepage": "https://github.com/reo7sp/reo-web-starter-kit#readme",
   "dependencies": {
     "bootstrap-sass": "^3.3.6",
-    "jquery": "^2.2.4"
+    "jquery": "^2.2.4",
+    "sassy-npm-importer": "^2.0.0"
   },
   "devDependencies": {
     "browser-sync": "^2.13.0",
