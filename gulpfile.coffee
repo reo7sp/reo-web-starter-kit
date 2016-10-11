@@ -59,6 +59,7 @@ gulp.task "styles:dev", ->
 gulp.task "styles:dist", ->
   stylesPipe()
     .pipe $.csso(comments: false)
+    .pipe $.uncss(html: ["#{sourceRoot}/**/*.html"])
     .pipe $.rev()
     .pipe gulp.dest stylesDistRoot
     .pipe $.rev.manifest(merge: true)
