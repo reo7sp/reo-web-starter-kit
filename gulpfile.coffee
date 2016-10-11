@@ -189,10 +189,20 @@ gulp.task "compile:dev", allSourcesDevTasks
 gulp.task "compile:dist", (callback) ->
   runSequence _.without(allSourcesDistTasks, "htmls:dist"), "htmls:dist", callback # hack for gulp-rev plugin
 
+gulp.task "watch", ["compile:dev"], ->
+  for [name, group] in _.zip allSourcesDevTasks, allSourcesFileGroups
+    gulp.watch group, [name]
+  return
+
 gulp.task "serve", ["compile:dev"], ->
   browserSync(notify: false, server: [tmpDistRoot, distRoot])
   for [name, group] in _.zip allSourcesDevTasks, allSourcesFileGroups
     gulp.watch group, [name, browserSync.reload]
+  return
+
+gulp.task "watch:dist", ["compile:dist"], ->
+  for [name, group] in _.zip(allSourcesDistTasks, allSourcesFileGroups)
+    gulp.watch group, [name]
   return
 
 gulp.task "serve:dist", ["compile:dist"], ->
