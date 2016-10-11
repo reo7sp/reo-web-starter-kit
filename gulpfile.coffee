@@ -13,9 +13,16 @@ buffer = require "vinyl-buffer"
 sassyNpmImporter = require "sassy-npm-importer"
 
 
-sourceRoot = "app"
-tmpDistRoot = ".tmp"
-distRoot = "dist"
+sourceRoot         = "app"
+tmpDistRoot        = ".tmp"
+distRoot           = "dist"
+
+stylesTmpDistRoot  = "#{tmpDistRoot}/styles"
+scriptsTmpDistRoot = "#{tmpDistRoot}/scripts"
+imagesTmpDistRoot  = "#{tmpDistRoot}/images"
+stylesDistRoot     = "#{distRoot}/styles"
+scriptsDistRoot    = "#{distRoot}/scripts"
+imagesDistRoot     = "#{distRoot}/images"
 
 
 # --- Utils --- #
@@ -53,7 +60,7 @@ stylesPipe = ->
 gulp.task "styles:dev", ->
   stylesPipe()
     .pipe $.sourcemaps.write(".")
-    .pipe gulp.dest "#{tmpDistRoot}/styles"
+    .pipe gulp.dest stylesTmpDistRoot
 
 gulp.task "styles:dist", ->
   cssnanoOptions =
@@ -63,7 +70,7 @@ gulp.task "styles:dist", ->
   stylesPipe()
     .pipe $.cssnano(cssnanoOptions)
     .pipe $.rev()
-    .pipe gulp.dest "#{distRoot}/styles"
+    .pipe gulp.dest stylesDistRoot
     .pipe $.rev.manifest(merge: true)
     .pipe gulp.dest "."
 
@@ -88,13 +95,13 @@ gulp.task "scripts:dev", ->
   scriptsPipe()
     .pipe $.sourcemaps.init(loadMaps: true)
     .pipe $.sourcemaps.write(".")
-    .pipe gulp.dest "#{tmpDistRoot}/scripts"
+    .pipe gulp.dest scriptsTmpDistRoot
 
 gulp.task "scripts:dist", ->
   scriptsPipe()
     .pipe $.uglify()
     .pipe $.rev()
-    .pipe gulp.dest "#{distRoot}/scripts"
+    .pipe gulp.dest scriptsDistRoot
     .pipe $.rev.manifest(merge: true)
     .pipe gulp.dest "."
 
@@ -141,13 +148,13 @@ imagesPipe = ->
 gulp.task "images:dev", ->
   imagesPipe()
     .pipe $.cached("images")
-    .pipe gulp.dest "#{tmpDistRoot}/images"
+    .pipe gulp.dest imagesTmpDistRoot
 
 gulp.task "images:dist", ->
   imagesPipe()
     .pipe $.cached("images:dist")
     .pipe $.imagemin(progressive: true, interlaced: true)
-    .pipe gulp.dest "#{distRoot}/images"
+    .pipe gulp.dest imagesDistRoot
 
 
 #
