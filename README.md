@@ -11,7 +11,7 @@ Boilerplate for sites
 
   <p>And also:</p>
   <ul>
-    <li><a href="https://mozilla.github.io/nunjucks/">Bootstrap</a></li>
+    <li><a href="http://getbootstrap.com/">Bootstrap</a></li>
   </ul>
 </section>
 
