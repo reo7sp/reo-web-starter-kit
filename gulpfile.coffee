@@ -14,14 +14,21 @@ sassyNpmImporter = require "sassy-npm-importer"
 
 
 sourceRoot         = "app"
-tmpDistRoot        = ".tmp"
-distRoot           = "dist"
+stylesSourceRoot   = "#{sourceRoot}/styles"
+scriptsSourceRoot  = "#{sourceRoot}/scripts"
+htmlSourceRoot     = sourceRoot
+imagesSourceRoot   = "#{sourceRoot}/images"
 
+tmpDistRoot        = ".tmp"
 stylesTmpDistRoot  = "#{tmpDistRoot}/styles"
 scriptsTmpDistRoot = "#{tmpDistRoot}/scripts"
+htmlTmpDistRoot    = tmpDistRoot
 imagesTmpDistRoot  = "#{tmpDistRoot}/images"
+
+distRoot           = "dist"
 stylesDistRoot     = "#{distRoot}/styles"
 scriptsDistRoot    = "#{distRoot}/scripts"
+htmlDistRoot       = distRoot
 imagesDistRoot     = "#{distRoot}/images"
 
 
@@ -38,10 +45,10 @@ plumberOptions =
 
 
 # --- Styles --- #
-possibleStylesMain = ["#{sourceRoot}/styles/main.sass", "#{sourceRoot}/styles/main.scss", "#{sourceRoot}/styles/main.css"]
+possibleStylesMain = ["#{stylesSourceRoot}/main.sass", "#{stylesSourceRoot}/main.scss", "#{stylesSourceRoot}/main.css"]
 stylesMain = _.find(possibleStylesMain, file_exists)
 stylesMain ?= possibleStylesMain[0]
-styles = "#{sourceRoot}/styles/**/*.{sass,scss,css}"
+styles = "#{stylesSourceRoot}/**/*.{sass,scss,css}"
 
 stylesPipe = ->
   gulp.src stylesMain
@@ -66,10 +73,10 @@ gulp.task "styles:dist", ->
 
 
 # --- Scripts --- #
-possibleScriptsMain = ["#{sourceRoot}/scripts/main.coffee", "#{sourceRoot}/scripts/main.js"]
+possibleScriptsMain = ["#{scriptsSourceRoot}/main.coffee", "#{scriptsSourceRoot}/main.js"]
 scriptsMain = _.find(possibleScriptsMain, file_exists)
 scriptsMain ?= possibleScriptsMain[0]
-scripts = "#{sourceRoot}/scripts/**/*.{coffee,js}"
+scripts = "#{scriptsSourceRoot}/**/*.{coffee,js}"
 
 scriptsPipe = ->
   b = browserify(scriptsMain, _.extend(browserifyInc.args, debug: true))
@@ -97,17 +104,17 @@ gulp.task "scripts:dist", ->
 
 
 # --- HTMLs --- #
-htmls = ["#{sourceRoot}/**/*.html", "!#{sourceRoot}/**/_*.html"]
+htmls = ["#{htmlSourceRoot}/**/*.html", "!#{htmlSourceRoot}/**/_*.html"]
 
 htmlsPipe = ->
   gulp.src htmls
     .pipe $.plumber(plumberOptions)
-    .pipe $.nunjucksRender(path: sourceRoot)
+    .pipe $.nunjucksRender(path: htmlSourceRoot)
 
 gulp.task "htmls:dev", ->
   htmlsPipe()
     .pipe $.cached("htmls")
-    .pipe gulp.dest tmpDistRoot
+    .pipe gulp.dest htmlTmpDistRoot
 
 gulp.task "htmls:dist", ->
   htmlminOptions =
@@ -125,11 +132,11 @@ gulp.task "htmls:dist", ->
     .pipe $.cached("htmls:dist")
     .pipe $.revReplace(manifest: gulp.src("./rev-manifest.json"))
     .pipe $.htmlmin(htmlminOptions)
-    .pipe gulp.dest distRoot
+    .pipe gulp.dest htmlDistRoot
 
 
 # --- Images --- #
-images = "#{sourceRoot}/images/**/*"
+images = "#{imagesSourceRoot}/**/*"
 
 imagesPipe = ->
   gulp.src images
