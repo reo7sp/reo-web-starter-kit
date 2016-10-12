@@ -1,3 +1,4 @@
+# Based on https://github.com/reo7sp/reo-web-starter-kit
 gulp = require "gulp"
 $ = require("gulp-load-plugins")()
 
