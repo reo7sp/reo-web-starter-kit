@@ -105,10 +105,11 @@ gulp.task "scripts:dist", ->
 
 
 # --- HTMLs --- #
-htmls = ["#{htmlSourceRoot}/**/*.html", "!#{htmlSourceRoot}/**/_*.html"]
+htmls = "#{htmlSourceRoot}/**/*.html"
+htmlsWithoutPartials = ["#{htmlSourceRoot}/**/*.html", "!#{htmlSourceRoot}/**/_*.html"]
 
 htmlsPipe = ->
-  gulp.src htmls
+  gulp.src htmlsWithoutPartials
     .pipe $.plumber(plumberOptions)
     .pipe $.nunjucksRender(path: htmlSourceRoot)
 
