@@ -105,7 +105,7 @@ gulp.task "scripts:dist", ->
 
 
 # --- HTMLs --- #
-htmls = "#{htmlSourceRoot}/**/*.html"
+htmls = "#{htmlSourceRoot}/**/*.{html,njk}"
 htmlsWithoutPartials = ["#{htmlSourceRoot}/**/*.html", "!#{htmlSourceRoot}/**/_*.html"]
 
 htmlsPipe = ->
